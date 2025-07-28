@@ -1,15 +1,44 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  userId    String   @unique
+  email     String   @unique
+  username  String
+  password  String
+  createdAt DateTime @default(now())
+
+  // Relasi Friends
+  friends       Friend[] @relation("UserFriends")
+  friendsWithMe Friend[] @relation("FriendWith")
+
+  // Relasi Message
+  messagesSent     Message[] @relation("MessagesSent")
+  messagesReceived Message[] @relation("MessagesReceived")
+}
+
+model Friend {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation("UserFriends", fields: [userId], references: [id])
+  userId    Int
+  friend    User     @relation("FriendWith", fields: [friendId], references: [id])
+  friendId  Int
+  createdAt DateTime @default(now())
+}
+
+model Message {
+  id         Int      @id @default(autoincrement())
+  sender     User     @relation("MessagesSent", fields: [senderId], references: [id])
+  senderId   Int
+  receiver   User     @relation("MessagesReceived", fields: [receiverId], references: [id])
+  receiverId Int
+  content    String
+  timestamp  DateTime @default(now())
 }

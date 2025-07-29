@@ -1,8 +1,8 @@
 import { Response, Request } from "express"
 import { prisma } from "../db/config"
 import { ApiResponse } from "../utils/response";
-const bcrypt = require("bcrypt")
-const jwt = require("jsonwebtoken")
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 export const register = async (req: Request, res: Response<ApiResponse>) => {
   try {
@@ -56,7 +56,7 @@ export const Login = async (req: Request, res: Response<ApiResponse>) => {
       return
     }
 
-    const isMatch = await bcrypt.compare(password, userLogin.password );
+    const isMatch = await bcrypt.compare(password, userLogin.password);
     if (!isMatch) {
       return res.status(401).json({
         success: false,
@@ -64,9 +64,11 @@ export const Login = async (req: Request, res: Response<ApiResponse>) => {
         errors: { password: "Incorrect password" },
       });
     }
-
-    const secret = process.env.JWT_SECRET
-    const token = jwt.sign({ id: userLogin.id }, secret , { expiresIn: "1d" });
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      throw new Error("JWT_SECRET environment variable is not defined");
+    }
+    const token = jwt.sign({ id: userLogin.id }, secret, { expiresIn: "1d" });
 
     res.status(200).json({
       success: true,
@@ -76,9 +78,9 @@ export const Login = async (req: Request, res: Response<ApiResponse>) => {
 
   } catch (err) {
     res.status(500).json({
-      success: false,
-      message: "Failed to send request!",
-      errors: err
-    });
+    success: false,
+    message: "Failed to send request!",
+    errors: err instanceof Error ? err.message : "Unknown error"
+  });
   }
 }

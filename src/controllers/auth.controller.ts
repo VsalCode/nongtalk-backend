@@ -1,10 +1,11 @@
 import { Response, Request } from "express"
 import { prisma } from "../db/config"
 import { ApiResponse } from "../utils/response";
+import { LoginRequest, RegisterRequest } from "../dto/auth.dto"
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
-export const register = async (req: Request, res: Response<ApiResponse>) => {
+export const register = async (req: Request<RegisterRequest>, res: Response<ApiResponse>) => {
   try {
     const { email, username, password } = req.body;
 
@@ -43,7 +44,7 @@ export const register = async (req: Request, res: Response<ApiResponse>) => {
 
 };
 
-export const Login = async (req: Request, res: Response<ApiResponse>) => {
+export const Login = async (req: Request<LoginRequest>, res: Response<ApiResponse>) => {
   try {
     const { email, password } = req.body
 

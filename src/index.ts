@@ -1,22 +1,29 @@
-import express, { Request, Response } from "express";
+import express, { Response } from "express";
 import dotenv from "dotenv";
 import { ApiResponse } from "./utils/response";
-import routers from "./routers/index.router"
-import morgan from "morgan"
+import routers from "./routers/index.router";
+import morgan from "morgan";
+import { createServer } from "http";
+import { Server } from "socket.io";
+import { handleSocketConnection } from "./config/socket.config";
+import cors from "cors";
 
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 5000;
 
+app.use(cors());
 app.use(express.json());
-app.use("/", routers)
-app.use(morgan("dev"))
+app.use(morgan("dev"));
+app.use("/", routers);
 
-app.get("/", (_, res: Response<ApiResponse>) => {
+app.get("/", (_req, res: Response<ApiResponse>) => {
   res.status(200).json({
     success: true,
     message: "Welcome to Nongtalk API!",
+    results: null,
+    errors: null,
   });
 });
 
@@ -24,9 +31,24 @@ app.use((_, res: Response<ApiResponse>) => {
   res.status(404).json({
     success: false,
     message: "Endpoint not found",
+    results: null,
+    errors: null,
   });
 });
 
-app.listen(PORT, () => {
+// server + socket.io setup
+const server = createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "*", // frontend URL
+  },
+});
+
+io.on("connection", (socket) => {
+  console.log("🔌 Socket connected:", socket.id);
+  handleSocketConnection(socket, io);
+});
+
+server.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });

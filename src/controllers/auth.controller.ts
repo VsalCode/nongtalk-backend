@@ -1,5 +1,5 @@
 import { Response, Request } from "express"
-import { prisma } from "../db/config"
+import { prisma } from "../config/db.config"
 import { ApiResponse } from "../utils/response";
 import { LoginRequest, RegisterRequest } from "../dto/auth.dto"
 import bcrypt from "bcrypt";

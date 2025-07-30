@@ -23,7 +23,7 @@ export const register = async (req: Request<RegisterRequest>, res: Response<ApiR
       data: {
         email,
         username,
-        userId: "USR" + Math.floor(100000 + Math.random() * 900000),
+        userCode: "USR" + Math.floor(100000 + Math.random() * 900000),
         password: hash,
       },
     });

@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import dotenv from "dotenv";
 import { ApiResponse } from "./utils/response";
 import routers from "./routers/index.router"
+import morgan from "morgan"
 
 dotenv.config();
 
@@ -10,6 +11,7 @@ const PORT = process.env.PORT;
 
 app.use(express.json());
 app.use("/", routers)
+app.use(morgan("dev"))
 
 app.get("/", (_, res: Response<ApiResponse>) => {
   res.status(200).json({

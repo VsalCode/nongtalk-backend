@@ -10,9 +10,9 @@ interface MessagePayload {
 export const handleSocketConnection = (socket: Socket, io: Server) => {
   console.log("✅ Socket connected:", socket.id);
 
-  socket.on("join", (userId: string) => {
-    socket.join(userId); 
-    console.log(`User joined room: ${userId}`);
+  socket.on("join", (userCode: string) => {
+    socket.join(userCode); 
+    console.log(`User joined room: ${userCode}`);
   });
 
   socket.on("send_message", async (data: MessagePayload) => {

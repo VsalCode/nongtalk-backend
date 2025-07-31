@@ -3,13 +3,13 @@ import { ApiResponse } from "../utils/response";
 import { AddFriendRequest } from "../dto/friends.dto";
 import { prisma } from "../config/db.config";
 
-export async function addFriends(
+export async function addFriend(
   req: Request<any, AddFriendRequest>,
   res: Response<ApiResponse>
 ) {
   try {
     const userLoginId = parseInt(req.userId as string);
-    const { friendCode } = req.body; 
+    const { friendCode } = req.body;
 
     const currentUser = await prisma.user.findUnique({
       where: { id: userLoginId }
@@ -30,7 +30,7 @@ export async function addFriends(
     }
 
     const friend = await prisma.user.findUnique({
-      where: { userCode: friendCode }, 
+      where: { userCode: friendCode },
     });
 
     if (!friend) {
@@ -43,13 +43,13 @@ export async function addFriends(
     const existingRelationship = await prisma.friend.findFirst({
       where: {
         OR: [
-          { 
-            userId: currentUser.id, 
-            friendId: friend.id 
+          {
+            userId: currentUser.id,
+            friendId: friend.id
           },
-          { 
-            userId: friend.id, 
-            friendId: currentUser.id 
+          {
+            userId: friend.id,
+            friendId: currentUser.id
           },
         ],
       },
@@ -70,7 +70,7 @@ export async function addFriends(
       include: {
         friend: {
           select: {
-            userCode: true, // Changed from userId to userCode
+            userCode: true, 
             username: true,
             email: true,
           },
@@ -93,11 +93,50 @@ export async function addFriends(
     });
 
   } catch (err) {
-    console.error("Error adding friend:", err);
     return res.status(500).json({
       success: false,
       message: "Failed to add friend",
       errors: err instanceof Error ? err.message : "Unknown error",
     });
+  }
+}
+
+export async function getAllFriends(req: Request, res: Response<ApiResponse>) {
+  try {
+    const userLoginId = await parseInt(req.userId as string);
+
+    const friends = await prisma.friend.findMany({
+      where: {
+        userId: userLoginId
+      },
+      include: {
+        friend: true 
+      }
+    })
+
+    if (friends.length === 0) {
+      res.status(404).json({
+        success: false,
+        message: `User with id ${userLoginId} has no friends.`,
+      })
+      return
+    }
+
+    const result = friends.map((f) => f.friend)
+
+    res.status(200).json({
+      success: true,
+      message: "Get all friends successfully",
+      results: result
+    })
+
+
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed request",
+      errors: err instanceof Error ? err.message : "Unknown error",
+    });
+
   }
 }

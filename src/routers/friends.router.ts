@@ -1,8 +1,9 @@
 import { Router } from "express"
 const router = Router()
 import { verifyToken } from "../middlewares/auth.middleware"
-import { addFriends } from "../controllers/friends.controller"
+import { addFriend, getAllFriends } from "../controllers/friends.controller"
 
-router.post("", verifyToken, addFriends )
+router.post("", verifyToken, addFriend )
+router.get("", verifyToken, getAllFriends )
 
 export default router

@@ -1,8 +1,12 @@
-import { prisma } from "../config/db.config";
-export async function getUserProfile(req, res) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.getUserProfile = getUserProfile;
+exports.updateUsername = updateUsername;
+const db_config_1 = require("../config/db.config");
+async function getUserProfile(req, res) {
     try {
         const userLoginId = parseInt(req.userId);
-        const profile = await prisma.user.findUnique({
+        const profile = await db_config_1.prisma.user.findUnique({
             where: {
                 id: userLoginId
             }
@@ -21,11 +25,11 @@ export async function getUserProfile(req, res) {
         });
     }
 }
-export async function updateUsername(req, res) {
+async function updateUsername(req, res) {
     try {
         const userLoginId = parseInt(req.userId);
         const { username } = req.body;
-        const updatedProfie = await prisma.user.update({
+        const updatedProfie = await db_config_1.prisma.user.update({
             where: {
                 id: userLoginId
             },

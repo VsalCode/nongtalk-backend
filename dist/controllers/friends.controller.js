@@ -1,9 +1,13 @@
-import { prisma } from "../config/db.config";
-export async function addFriend(req, res) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.addFriend = addFriend;
+exports.getAllFriends = getAllFriends;
+const db_config_1 = require("../config/db.config");
+async function addFriend(req, res) {
     try {
         const userLoginId = parseInt(req.userId);
         const { friendCode } = req.body;
-        const currentUser = await prisma.user.findUnique({
+        const currentUser = await db_config_1.prisma.user.findUnique({
             where: { id: userLoginId }
         });
         if (!currentUser) {
@@ -18,7 +22,7 @@ export async function addFriend(req, res) {
                 message: "Cannot add yourself as friend",
             });
         }
-        const friend = await prisma.user.findUnique({
+        const friend = await db_config_1.prisma.user.findUnique({
             where: { userCode: friendCode },
         });
         if (!friend) {
@@ -27,7 +31,7 @@ export async function addFriend(req, res) {
                 message: "User not found",
             });
         }
-        const existingRelationship = await prisma.friend.findFirst({
+        const existingRelationship = await db_config_1.prisma.friend.findFirst({
             where: {
                 OR: [
                     {
@@ -47,7 +51,7 @@ export async function addFriend(req, res) {
                 message: "Friend relationship already exists",
             });
         }
-        const newFriend = await prisma.friend.create({
+        const newFriend = await db_config_1.prisma.friend.create({
             data: {
                 userId: currentUser.id,
                 friendId: friend.id,
@@ -84,10 +88,10 @@ export async function addFriend(req, res) {
         });
     }
 }
-export async function getAllFriends(req, res) {
+async function getAllFriends(req, res) {
     try {
         const userLoginId = await parseInt(req.userId);
-        const friends = await prisma.friend.findMany({
+        const friends = await db_config_1.prisma.friend.findMany({
             where: {
                 userId: userLoginId
             },

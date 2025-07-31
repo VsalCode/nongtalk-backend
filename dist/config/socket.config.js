@@ -1,5 +1,8 @@
-import { prisma } from "../config/db.config";
-export const handleSocketConnection = (socket, io) => {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.handleSocketConnection = void 0;
+const db_config_1 = require("../config/db.config");
+const handleSocketConnection = (socket, io) => {
     console.log("✅ Socket connected:", socket.id);
     socket.on("join", (userCode) => {
         socket.join(userCode);
@@ -7,7 +10,7 @@ export const handleSocketConnection = (socket, io) => {
     });
     socket.on("send_message", async (data) => {
         const { senderId, receiverId, content } = data;
-        const message = await prisma.message.create({
+        const message = await db_config_1.prisma.message.create({
             data: {
                 senderId,
                 receiverId,
@@ -20,4 +23,5 @@ export const handleSocketConnection = (socket, io) => {
         console.log("❌ Socket disconnected:", socket.id);
     });
 };
+exports.handleSocketConnection = handleSocketConnection;
 //# sourceMappingURL=socket.config.js.map

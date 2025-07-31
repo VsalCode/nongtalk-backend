@@ -1,5 +1,11 @@
-import jwt from "jsonwebtoken";
-export const verifyToken = async (req, res, next) => {
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.verifyToken = void 0;
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const verifyToken = async (req, res, next) => {
     const authHeader = req.headers["authorization"];
     if (!authHeader) {
         return res.status(401).json({
@@ -19,7 +25,7 @@ export const verifyToken = async (req, res, next) => {
         if (!secret) {
             throw new Error("JWT_SECRET environment variable is not defined");
         }
-        const decoded = jwt.verify(token, secret);
+        const decoded = jsonwebtoken_1.default.verify(token, secret);
         if (!decoded.id) {
             return res.status(403).json({
                 success: false,
@@ -43,4 +49,5 @@ export const verifyToken = async (req, res, next) => {
         });
     }
 };
+exports.verifyToken = verifyToken;
 //# sourceMappingURL=auth.middleware.js.map

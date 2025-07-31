@@ -1,5 +1,8 @@
-import { prisma } from "../config/db.config";
-export const messageHistory = async (req, res) => {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.messageHistory = void 0;
+const db_config_1 = require("../config/db.config");
+const messageHistory = async (req, res) => {
     try {
         const user1 = parseInt(req.userId);
         const { friendCode } = req.body;
@@ -10,7 +13,7 @@ export const messageHistory = async (req, res) => {
                 results: null,
             });
         }
-        const friend = await prisma.user.findUnique({
+        const friend = await db_config_1.prisma.user.findUnique({
             where: { userCode: friendCode },
         });
         if (!friend) {
@@ -20,7 +23,7 @@ export const messageHistory = async (req, res) => {
                 results: null,
             });
         }
-        const messages = await prisma.message.findMany({
+        const messages = await db_config_1.prisma.message.findMany({
             where: {
                 OR: [
                     { senderId: user1, receiverId: friend.id },
@@ -43,4 +46,5 @@ export const messageHistory = async (req, res) => {
         });
     }
 };
+exports.messageHistory = messageHistory;
 //# sourceMappingURL=message.controller.js.map

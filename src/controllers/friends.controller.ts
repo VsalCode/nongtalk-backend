@@ -104,32 +104,52 @@ export async function addFriend(
 export async function getAllFriends(req: Request, res: Response<ApiResponse>) {
   try {
     const userLoginId = await parseInt(req.userId as string);
+    const { search } = req.query;
+
+    const whereCondition: any = {
+      userId: userLoginId
+    };
+
+    if (search && typeof search === 'string') {
+      whereCondition.friend = {
+        username: {
+          contains: search,
+          mode: 'insensitive' 
+        }
+      };
+    }
 
     const friends = await prisma.friend.findMany({
-      where: {
-        userId: userLoginId
-      },
+      where: whereCondition,
       include: {
         friend: true 
       }
-    })
+    });
 
     if (friends.length === 0) {
+      const message = search 
+        ? `No friends found with username containing "${search}".`
+        : `User with id ${userLoginId} has no friends.`;
+      
       res.status(404).json({
         success: false,
-        message: `User with id ${userLoginId} has no friends.`,
-      })
-      return
+        message: message,
+      });
+      return;
     }
 
-    const result = friends.map((f) => f.friend)
+    const result = friends.map((f) => f.friend);
 
     res.status(200).json({
       success: true,
-      message: "Get all friends successfully",
-      results: result
-    })
-
+      message: search 
+        ? `Found ${result.length} friend(s) matching "${search}"`
+        : "Get all friends successfully",
+      results: {
+        result: result,
+        count: result.length
+      },
+    });
 
   } catch (err) {
     return res.status(500).json({
@@ -137,7 +157,6 @@ export async function getAllFriends(req: Request, res: Response<ApiResponse>) {
       message: "Failed request",
       errors: err instanceof Error ? err.message : "Unknown error",
     });
-
   }
 }
 

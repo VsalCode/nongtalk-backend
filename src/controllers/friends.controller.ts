@@ -140,3 +140,88 @@ export async function getAllFriends(req: Request, res: Response<ApiResponse>) {
 
   }
 }
+
+export async function deleteFriendByCode(req: Request, res: Response<ApiResponse>) {
+  try {
+    const userLoginId = parseInt(req.userId as string);
+    const { friendCode } = req.body;
+
+    if (!friendCode) {
+      return res.status(400).json({
+        success: false,
+        message: "Friend code is required",
+      });
+    }
+
+    const currentUser = await prisma.user.findUnique({
+      where: { id: userLoginId }
+    });
+
+    if (!currentUser) {
+      return res.status(404).json({
+        success: false,
+        message: "Current user not found",
+      });
+    }
+
+    const friend = await prisma.user.findUnique({
+      where: { userCode: friendCode },
+    });
+
+    if (!friend) {
+      return res.status(404).json({
+        success: false,
+        message: "Friend not found",
+      });
+    }
+
+    const existingRelationship = await prisma.friend.findFirst({
+      where: {
+        OR: [
+          {
+            userId: userLoginId,
+            friendId: friend.id
+          },
+          {
+            userId: friend.id,
+            friendId: userLoginId
+          },
+        ],
+      },
+    });
+
+    if (!existingRelationship) {
+      return res.status(404).json({
+        success: false,
+        message: "Friend relationship not found",
+      });
+    }
+
+    await prisma.friend.delete({
+      where: {
+        id: existingRelationship.id
+      }
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: `Friend ${friend.username} removed successfully`,
+      results: {
+        deletedFriend: {
+          username: friend.username,
+          userCode: friend.userCode,
+          email: friend.email
+        },
+        deletedAt: new Date().toISOString()
+      }
+    });
+
+  } catch (err) {
+    console.error('Delete friend by code error:', err);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to delete friend",
+      errors: err instanceof Error ? err.message : "Unknown error",
+    });
+  }
+}

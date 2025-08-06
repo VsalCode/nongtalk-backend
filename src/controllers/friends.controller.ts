@@ -160,15 +160,23 @@ export async function getAllFriends(req: Request, res: Response<ApiResponse>) {
   }
 }
 
-export async function deleteFriendByCode(req: Request, res: Response<ApiResponse>) {
+export async function deleteFriendById(req: Request, res: Response<ApiResponse>) {
   try {
     const userLoginId = parseInt(req.userId as string);
-    const { friendCode } = req.body;
+    const { friendId } = req.params;
 
-    if (!friendCode) {
+    if (!friendId) {
       return res.status(400).json({
         success: false,
-        message: "Friend code is required",
+        message: "Friend ID is required",
+      });
+    }
+
+    const friendIdInt = parseInt(friendId);
+    if (isNaN(friendIdInt)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid friend ID format",
       });
     }
 
@@ -184,7 +192,7 @@ export async function deleteFriendByCode(req: Request, res: Response<ApiResponse
     }
 
     const friend = await prisma.user.findUnique({
-      where: { userCode: friendCode },
+      where: { id: friendIdInt },
     });
 
     if (!friend) {
@@ -199,10 +207,10 @@ export async function deleteFriendByCode(req: Request, res: Response<ApiResponse
         OR: [
           {
             userId: userLoginId,
-            friendId: friend.id
+            friendId: friendIdInt
           },
           {
-            userId: friend.id,
+            userId: friendIdInt,
             friendId: userLoginId
           },
         ],
@@ -227,6 +235,7 @@ export async function deleteFriendByCode(req: Request, res: Response<ApiResponse
       message: `Friend ${friend.username} removed successfully`,
       results: {
         deletedFriend: {
+          id: friend.id,
           username: friend.username,
           userCode: friend.userCode,
           email: friend.email
@@ -236,7 +245,7 @@ export async function deleteFriendByCode(req: Request, res: Response<ApiResponse
     });
 
   } catch (err) {
-    console.error('Delete friend by code error:', err);
+    console.error('Delete friend by ID error:', err);
     return res.status(500).json({
       success: false,
       message: "Failed to delete friend",

@@ -22,8 +22,6 @@ app.get("/", (_req, res: Response<ApiResponse>) => {
   res.status(200).json({
     success: true,
     message: "Welcome to Nongtalk API!",
-    results: null,
-    errors: null,
   });
 });
 
@@ -31,8 +29,6 @@ app.use((_, res: Response<ApiResponse>) => {
   res.status(404).json({
     success: false,
     message: "Endpoint not found",
-    results: null,
-    errors: null,
   });
 });
 

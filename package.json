@@ -5,7 +5,8 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "prisma:generate": "prisma generate"
+    "prisma:generate": "prisma generate",
+    "postbuild": "npx prisma migrate deploy && npx prisma generate"
   },
   "keywords": [],
   "author": "",

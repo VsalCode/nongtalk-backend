@@ -138,17 +138,21 @@ export async function getAllFriends(req: Request, res: Response<ApiResponse>) {
       return;
     }
 
-    const result = friends.map((f) => f.friend);
+    const result = friends.map((f) => ({
+      id: f.friend.id, 
+      friendshipId: f.id,
+      userCode: f.friend.userCode,
+      username: f.friend.username,
+      email: f.friend.email,
+      createdAt: f.createdAt
+    }));
 
     res.status(200).json({
       success: true,
       message: search 
         ? `Found ${result.length} friend(s) matching "${search}"`
         : "Get all friends successfully",
-      results: {
-        result: result,
-        count: result.length
-      },
+      results: result,
     });
 
   } catch (err) {
@@ -163,7 +167,7 @@ export async function getAllFriends(req: Request, res: Response<ApiResponse>) {
 export async function deleteFriendById(req: Request, res: Response<ApiResponse>) {
   try {
     const userLoginId = parseInt(req.userId as string);
-    const { friendId } = req.params;
+    const friendId = req.params.id
 
     if (!friendId) {
       return res.status(400).json({

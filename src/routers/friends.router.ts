@@ -5,6 +5,6 @@ import { addFriend, getAllFriends, deleteFriendById } from "../controllers/frien
 
 router.post("", verifyToken, addFriend )
 router.get("", verifyToken, getAllFriends )
-router.delete("/:friendId", verifyToken, deleteFriendById)
+router.delete("/:id", verifyToken, deleteFriendById)
 
 export default router

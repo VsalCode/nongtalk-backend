@@ -70,7 +70,7 @@ export async function addFriend(
       include: {
         friend: {
           select: {
-            userCode: true, 
+            userCode: true,
             username: true,
             email: true,
           },
@@ -114,7 +114,7 @@ export async function getAllFriends(req: Request, res: Response<ApiResponse>) {
       whereCondition.friend = {
         username: {
           contains: search,
-          mode: 'insensitive' 
+          mode: 'insensitive'
         }
       };
     }
@@ -122,15 +122,15 @@ export async function getAllFriends(req: Request, res: Response<ApiResponse>) {
     const friends = await prisma.friend.findMany({
       where: whereCondition,
       include: {
-        friend: true 
+        friend: true
       }
     });
 
     if (friends.length === 0) {
-      const message = search 
+      const message = search
         ? `No friends found with username containing "${search}".`
         : `User with id ${userLoginId} has no friends.`;
-      
+
       res.status(404).json({
         success: false,
         message: message,
@@ -139,17 +139,18 @@ export async function getAllFriends(req: Request, res: Response<ApiResponse>) {
     }
 
     const result = friends.map((f) => ({
-      id: f.friend.id, 
-      friendshipId: f.id,
+      id: f.friend.id,
+      friendshipId: f.id, 
       userCode: f.friend.userCode,
       username: f.friend.username,
       email: f.friend.email,
       createdAt: f.createdAt
     }));
 
+
     res.status(200).json({
       success: true,
-      message: search 
+      message: search
         ? `Found ${result.length} friend(s) matching "${search}"`
         : "Get all friends successfully",
       results: result,
@@ -167,58 +168,35 @@ export async function getAllFriends(req: Request, res: Response<ApiResponse>) {
 export async function deleteFriendById(req: Request, res: Response<ApiResponse>) {
   try {
     const userLoginId = parseInt(req.userId as string);
-    const friendId = req.params.id
+    const friendshipId = req.params.id;
 
-    if (!friendId) {
+    if (!friendshipId) {
       return res.status(400).json({
         success: false,
-        message: "Friend ID is required",
+        message: "Friendship ID is required",
       });
     }
 
-    const friendIdInt = parseInt(friendId);
-    if (isNaN(friendIdInt)) {
+    const friendshipIdInt = parseInt(friendshipId);
+    if (isNaN(friendshipIdInt)) {
       return res.status(400).json({
         success: false,
-        message: "Invalid friend ID format",
-      });
-    }
-
-    const currentUser = await prisma.user.findUnique({
-      where: { id: userLoginId }
-    });
-
-    if (!currentUser) {
-      return res.status(404).json({
-        success: false,
-        message: "Current user not found",
-      });
-    }
-
-    const friend = await prisma.user.findUnique({
-      where: { id: friendIdInt },
-    });
-
-    if (!friend) {
-      return res.status(404).json({
-        success: false,
-        message: "Friend not found",
+        message: "Invalid friendship ID format",
       });
     }
 
     const existingRelationship = await prisma.friend.findFirst({
       where: {
+        id: friendshipIdInt,
         OR: [
-          {
-            userId: userLoginId,
-            friendId: friendIdInt
-          },
-          {
-            userId: friendIdInt,
-            friendId: userLoginId
-          },
-        ],
+          { userId: userLoginId },
+          { friendId: userLoginId }
+        ]
       },
+      include: {
+        friend: true,
+        user: true
+      }
     });
 
     if (!existingRelationship) {
@@ -229,20 +207,23 @@ export async function deleteFriendById(req: Request, res: Response<ApiResponse>)
     }
 
     await prisma.friend.delete({
-      where: {
-        id: existingRelationship.id
-      }
+      where: { id: friendshipIdInt }
     });
+
+    const deletedUser =
+      existingRelationship.userId === userLoginId
+        ? existingRelationship.friend
+        : existingRelationship.user;
 
     return res.status(200).json({
       success: true,
-      message: `Friend ${friend.username} removed successfully`,
+      message: `Friend ${deletedUser.username} removed successfully`,
       results: {
         deletedFriend: {
-          id: friend.id,
-          username: friend.username,
-          userCode: friend.userCode,
-          email: friend.email
+          id: deletedUser.id,
+          username: deletedUser.username,
+          userCode: deletedUser.userCode,
+          email: deletedUser.email
         },
         deletedAt: new Date().toISOString()
       }
